@@ -70,10 +70,27 @@ class Blockchain {
                 block.previousBlockHash = self.chain[self.chain.length-1].hash;
             }
             block.hash = SHA256(JSON.stringify(block)).toString();
-            self.chain.push(block);
-            self.height++;
-            resolve(block);
-            reject('error by adding a block');
+            console.debug('validation of chain starts here');
+            let errors = await self.validateChain();
+            console.log(errors)
+            console.debug('Validation of chain ended')
+            if (errors.length === 0 ){
+                self.chain.push(block);
+                self.height++;
+                resolve(block)
+            }else{
+                reject(errors);
+            }
+            // Validate chain, removing last added block if chain is invalid
+            //self.validateChain()
+            //.then(errorLog => {
+            //    if (errorLog.length > 0) {
+            //        self.chain.pop();
+            //        resolve(errorLog);
+            //    } else {
+            //        resolve(block);
+            //    }
+            //});
         });
     }
 
@@ -194,30 +211,36 @@ class Blockchain {
      validateChain() {
         let self = this;
         let errorLog = [];
-        return new Promise(async (resolve, reject) => {
-            let promises = [];                                                                                              //Array of promises
-            let blockIndex = 0;                                                                                             //Block Index
-            self.chain.forEach(block => {                                                                                   //Loop on each block
-                promises.push(block.validate());                                                                            //Push result of block.validate
-                if (block.height > 0) {                                                                                     //if the block is not the genesis block
-                    let prevBlockHash = block.previousBlockHash;                                                            //We get the previous block hash from the block
-                    let blockHash = self.chain[blockIndex - 1].hash;                                                        //we get the previous block hash from the blockchain
-                    if (blockHash != prevBlockHash) {                                                                       //If the block is not right
-                        errorLog.push(`Error - Block Heigh: ${block.height} - Previous Hash don't match.`);
+        return new Promise((resolve) => {
+            // Go through each block and make sure stored hash of
+            // previous block matches actual hash of previous block
+            let validatePromises = [];
+            self.chain.forEach((block, index) => {
+                if (block.height > 0) {
+                    const previousBlock = self.chain[index - 1];
+                    if (block.previousBlockHash !== previousBlock.hash) {
+                        const errorMessage = `Block ${index} previousBlockHash set to ${block.previousBlockHash}, but actual previous block hash was ${previousBlock.hash}`;
+                        errorLog.push(errorMessage);
                     }
                 }
-                blockIndex++;
+
+                // Store promise to validate each block
+                validatePromises.push(block.validate());
             });
-            Promise.all(promises).then((results) => {
-                blockIndex = 0;
-                results.forEach(valid => {
-                    if (!valid) {
-                        errorLog.push(`Error - Block Heigh: ${self.chain[blockIndex].height} - Has been Tampered.`);
-                    }
-                    blockIndex++;
+
+            // Collect results of each block's validate call
+            Promise.all(validatePromises)
+                .then(validatedBlocks => {
+                    validatedBlocks.forEach((valid, index) => {
+                        if (!valid) {
+                            const invalidBlock = self.chain[index];
+                            const errorMessage = `Block ${index} hash (${invalidBlock.hash}) is invalid`;
+                            errorLog.push(errorMessage);
+                        }
+                    });
+
+                    resolve(errorLog);
                 });
-                resolve(errorLog);
-            }).catch((err) => { console.log(err); reject(err) });
         });
     }
 
