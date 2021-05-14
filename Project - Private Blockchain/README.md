@@ -15,6 +15,8 @@ why not? Implement too.
 In this project you will have a boilerplate code with a REST Api already setup to expose some of the functionalities
 you will implement in your private blockchain.
 
+EDIT : BRAX : RESULTS OF MY WORK CAN BE FOUND IN THE SCREENSHOTS FOLDER
+
 ## What problem will you solve implementing this private Blockchain application?
 
 Your employer is trying to make a test of concept on how a Blockchain application can be implemented in his company.
