@@ -1,5 +1,4 @@
 # Blockchain-Lesson-1
-Create Your Own Private Blockchain project
 
 3 folders in this Repo : 
 
