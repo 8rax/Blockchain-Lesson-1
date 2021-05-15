@@ -131,7 +131,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             let temps = parseInt(message.split(':')[1]);                              //Get the time from the message sent as a parameter
             let currentTime = parseInt(new Date().getTime().toString().slice(0, -3)); //Get the current time
-            if (currentTime-temps < (5*60*1000)){                                     //Check if the time elapsed is less than 5 minutes
+            if (currentTime-temps < (5*60)){                                     //Check if the time elapsed is less than 5 minutes
                 if(bitcoinMessage.verify(message, address, signature)) {              //If yes verify the message
                     let block = new BlockClass.Block({"owner":address, "star":star});  //creation of the new block with the owner and the star 
                     self._addBlock(block);                                            //Add the block
