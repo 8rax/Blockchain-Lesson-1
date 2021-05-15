@@ -44,11 +44,9 @@ class Block {
             self.hash = null;
             // Recalculate the hash of the Block
             const newHash = SHA256(JSON.stringify(self)).toString();
-            // Comparing if the hashes changed
             self.hash = currentHash;
-            // Returning the Block is not valid
+            // Comparing if the hashes changed and return true or false
             resolve(currentHash === newHash);
-            // Returning the Block is valid
           } catch (err) {
             reject(new Error(err)); 
           }

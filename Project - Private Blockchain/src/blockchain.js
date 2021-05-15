@@ -64,33 +64,24 @@ class Blockchain {
      _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            block.height = self.chain.length;
-            block.time = new Date().getTime().toString().slice(0,-3);
+            block.height = self.chain.length; //get current height
+            block.time = new Date().getTime().toString().slice(0,-3); //get current time
             if(self.chain.length>0){
-                block.previousBlockHash = self.chain[self.chain.length-1].hash;
+                block.previousBlockHash = self.chain[self.chain.length-1].hash; //get previous hash
             }
-            block.hash = SHA256(JSON.stringify(block)).toString();
+            block.hash = SHA256(JSON.stringify(block)).toString(); //calculate hash
+            //Validation
             console.debug('validation of chain starts here');
-            let errors = await self.validateChain();
+            let errors = await self.validateChain(); //call the validate chain method
             console.log(errors)
             console.debug('Validation of chain ended')
-            if (errors.length === 0 ){
-                self.chain.push(block);
-                self.height++;
-                resolve(block)
+            if (errors.length === 0 ){ //if no errors in blockchain
+                self.chain.push(block); //push new block
+                self.height++; //increment height
+                resolve(block) //resolve the new block
             }else{
                 reject(errors);
             }
-            // Validate chain, removing last added block if chain is invalid
-            //self.validateChain()
-            //.then(errorLog => {
-            //    if (errorLog.length > 0) {
-            //        self.chain.pop();
-            //        resolve(errorLog);
-            //    } else {
-            //        resolve(block);
-            //    }
-            //});
         });
     }
 
@@ -131,7 +122,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             let temps = parseInt(message.split(':')[1]);                              //Get the time from the message sent as a parameter
             let currentTime = parseInt(new Date().getTime().toString().slice(0, -3)); //Get the current time
-            if (currentTime-temps < (5*60)){                                     //Check if the time elapsed is less than 5 minutes
+            if (currentTime-temps < (5*60)){                                           //Check if the time elapsed is less than 5 minutes
                 if(bitcoinMessage.verify(message, address, signature)) {              //If yes verify the message
                     let block = new BlockClass.Block({"owner":address, "star":star});  //creation of the new block with the owner and the star 
                     self._addBlock(block);                                            //Add the block
@@ -155,7 +146,7 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             const block = self.chain.filter(block => block.hash === hash);
-            if (typeof block == 'undefined'){
+            if (typeof block != 'undefined'){
                 resolve(block); 
             }else{
                 reject(Error("No block with this hash"))
